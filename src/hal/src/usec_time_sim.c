@@ -1,13 +1,14 @@
-/**
- *    ||          ____  _ __
- * +------+      / __ )(_) /_______________ _____  ___
+/*
+ *    ||          ____  _ __                           
+ * +------+      / __ )(_) /_______________ _____  ___ 
  * | 0xBC |     / __  / / __/ ___/ ___/ __ `/_  / / _ \
  * +------+    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
  *  ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
  *
- * Crazyflie control firmware
+ * Crazyflie simulation firmware
  *
- * Copyright (C) 2012-2016 Bitcraze AB
+ * Copyright (c) 2018  Eric Goubault, Sylvie Putot, Franck Djeumou
+ *					   Cosynux , LIX , France
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,35 +22,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
- * num.c - 16bit floating point handling functions
+ * usec_time.c - fake microsecond-resolution timer and timestamps on LINUX RTOS
  */
 
-#ifndef __NUM_H
-#define __NUM_H
+/* FreeRtos includes */
+#include "FreeRTOS.h"
+#include "task.h"
 
-#include <stdint.h>
+#include "usec_time.h"
 
-#undef max
-#define max(a,b) ((a) > (b) ? (a) : (b))
-#undef min
-#define min(a,b) ((a) < (b) ? (a) : (b))
+void initUsecTimer(void)
+{
+  return ;
+}
 
-#undef abs
-#define abs(a) ((a) > 0 ? (a) : (-1*(a)))
-
-#ifndef SITL_CF2
-#undef isnan
-#define isnan(n) ((n != n) ? 1 : 0)
-#else
-#include <math.h>
-#endif
-
-
-uint16_t single2half(float number);
-float half2single(uint16_t number);
-
-uint16_t limitUint16(int32_t value);
-float constrain(float value, const float minVal, const float maxVal);
-float deadband(float value, const float threshold);
-
-#endif
+/* usecTimestamp just to be able to used crtp_commander_high_level module */
+uint64_t usecTimestamp(void)
+{
+  return (unsigned long) ((xTaskGetTickCount())*(1000000.0/configTICK_RATE_HZ)) ;
+}

@@ -38,7 +38,9 @@
 #include "stabilizer.h"
 #include "configblock.h"
 
+#ifndef SITL_CF2
 #include "locodeck.h"
+#endif
 
 #include "estimator_kalman.h"
 
@@ -83,9 +85,13 @@ typedef struct
 // Struct for logging position information
 static positionMeasurement_t ext_pos;
 static ExtPositionCache crtpExtPosCache;
+
+#ifndef SITL_CF2
 static CRTPPacket pkRange;
 static uint8_t rangeIndex;
 static bool enableRangeStreamFloat = false;
+#endif
+
 static bool isInit = false;
 static uint8_t my_id;
 
@@ -135,6 +141,7 @@ static void genericLocHandle(CRTPPacket* pk)
   uint8_t type = pk->data[0];
   if (pk->size < 1) return;
 
+#ifndef SITL_CF2
   if (type == LPS_SHORT_LPP_PACKET && pk->size >= 2) {
     bool success = lpsSendLppShort(pk->data[1], &pk->data[2], pk->size-2);
 
@@ -143,7 +150,9 @@ static void genericLocHandle(CRTPPacket* pk)
     pk->size = 3;
     pk->data[2] = success?1:0;
     crtpSendPacket(pk);
-  } else if (type == EMERGENCY_STOP) {
+  } 
+#endif
+  if (type == EMERGENCY_STOP) {
     stabilizerSetEmergencyStop();
   } else if (type == EMERGENCY_STOP_WATCHDOG) {
     stabilizerSetEmergencyStopTimeout(DEFAULT_EMERGENCY_STOP_TIMEOUT);
@@ -198,6 +207,7 @@ void locSrvSendPacket(locsrv_t type, uint8_t *data, uint8_t length)
   crtpSendPacket(&pk);
 }
 
+#ifndef SITL_CF2
 void locSrvSendRangeFloat(uint8_t id, float range)
 {
   rangePacket *rp = (rangePacket *)pkRange.data;
@@ -221,6 +231,7 @@ void locSrvSendRangeFloat(uint8_t id, float range)
     }
   }
 }
+#endif
 
 LOG_GROUP_START(ext_pos)
   LOG_ADD(LOG_FLOAT, X, &ext_pos.x)
@@ -228,6 +239,8 @@ LOG_GROUP_START(ext_pos)
   LOG_ADD(LOG_FLOAT, Z, &ext_pos.z)
 LOG_GROUP_STOP(ext_pos)
 
+#ifndef SITL_CF2
 PARAM_GROUP_START(locSrv)
 PARAM_ADD(PARAM_UINT8, enRangeStreamFP32, &enableRangeStreamFloat)
 PARAM_GROUP_STOP(locSrv)
+#endif

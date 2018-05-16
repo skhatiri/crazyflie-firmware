@@ -26,7 +26,14 @@
 
 #include <stddef.h>
 #include <stdlib.h>
+
+#ifndef SITL_CF2
 #include "stm32fxxx.h"
+#else
+#include "cfassert.h"
+#define assert_param(x) ASSERT(x)
+#endif
+
 #include "trigger.h"
 
 /**

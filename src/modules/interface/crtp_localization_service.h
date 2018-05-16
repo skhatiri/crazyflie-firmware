@@ -55,7 +55,9 @@ void locSrvInit(void);
 // Get the current position from the cache
 bool getExtPosition(state_t *state);
 
+#ifndef SITL_CF2
 // Send range in float. After 5 ranges it will send the packet.
 void locSrvSendRangeFloat(uint8_t id, float range);
+#endif
 
 #endif /* _CRTP_LOCALIZATION_SERVICE_H_ */

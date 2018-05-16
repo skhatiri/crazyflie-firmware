@@ -38,6 +38,10 @@ implementation of planning state machine
 
 #include "planner.h"
 
+#ifdef SITL_CF2
+#include <stddef.h>
+#endif
+
 static struct piecewise_traj planned_trajectory;
 static struct poly4d pieces[1]; // the on-board planner requires a single piece, only
 

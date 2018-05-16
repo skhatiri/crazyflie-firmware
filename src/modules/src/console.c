@@ -32,12 +32,14 @@
 
 #include "crtp.h"
 
+#ifndef SITL_CF2
 #ifdef STM32F40_41xxx
 #include "stm32f4xx.h"
 #else
 #include "stm32f10x.h"
 #ifndef SCB_ICSR_VECTACTIVE_Msk
 #define SCB_ICSR_VECTACTIVE_Msk 0x1FFUL
+#endif
 #endif
 #endif
 
@@ -85,16 +87,17 @@ bool consoleTest(void)
 
 int consolePutchar(int ch)
 {
-  int i;
-  bool isInInterrupt = (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0;
-
   if (!isInit) {
     return 0;
   }
 
+  int i;
+#ifndef SITL_CF2
+  bool isInInterrupt = (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0;
   if (isInInterrupt) {
     return consolePutcharFromISR(ch);
   }
+#endif
 
   if (xSemaphoreTake(synch, portMAX_DELAY) == pdTRUE)
   {

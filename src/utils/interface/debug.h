@@ -26,6 +26,10 @@
 #include "config.h"
 #include "console.h"
 
+#ifdef SITL_CF2
+  #include <stdio.h>
+#endif
+
 #ifdef DEBUG_PRINT_ON_UART
   #include "uart1.h"
   #define uartPrintf uart1Printf
@@ -45,6 +49,9 @@
 #elif defined(DEBUG_PRINT_ON_SWO)
   #define DEBUG_PRINT(fmt, ...) eprintf(ITM_SendChar, fmt, ## __VA_ARGS__)
   #define DEBUG_PRINT_OS(fmt, ...) eprintf(ITM_SendChar, fmt, ## __VA_ARGS__)
+#elif defined(SITL_CF2)
+  #define DEBUG_PRINT(fmt, ...) printf(DEBUG_FMT(fmt), ##__VA_ARGS__)
+  #define DEBUG_PRINT_OS(fmt, ...) printf(DEBUG_FMT(fmt), ##__VA_ARGS__)
 #else // Debug using radio or USB
   #define DEBUG_PRINT(fmt, ...) consolePrintf(DEBUG_FMT(fmt), ##__VA_ARGS__)
 #define DEBUG_PRINT_OS(fmt, ...) consolePrintf(DEBUG_FMT(fmt), ##__VA_ARGS__)

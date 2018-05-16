@@ -71,7 +71,11 @@
  *----------------------------------------------------------*/
 
 #define configUSE_PREEMPTION		1
-#define configUSE_IDLE_HOOK			1
+#ifndef SITL_CF2
+    #define configUSE_IDLE_HOOK     1
+#else
+    #define configUSE_IDLE_HOOK     0
+#endif
 #define configUSE_TICK_HOOK			0
 #define configCPU_CLOCK_HZ			( ( unsigned long ) FREERTOS_MCU_CLOCK_HZ )
 #define configTICK_RATE_HZ			( ( portTickType ) 1000 )
@@ -134,8 +138,20 @@ to exclude the API function. */
 #define TASK_PM_ID_NBR          5
 #define TASK_PROXIMITY_ID_NBR   6
 
-#define configASSERT( x )  if( ( x ) == 0 ) assertFail(#x, __FILE__, __LINE__ )
-
+#ifdef SITL_CF2
+    #define configUSE_TRACE_FACILITY    1
+    extern void vAssertCalled( unsigned long ulLine, const char * const pcFileName );
+    #define configASSERT( x ) if( ( x ) == 0 ) vAssertCalled( __LINE__, __FILE__ )
+    /* Hack for undefined vApplicationMallocFailedHook */
+    extern void vApplicationMallocFailedHook(void);
+    /* Include the FreeRTOS+Trace FreeRTOS trace macro definitions. */
+    #define TRACE_ENTER_CRITICAL_SECTION() portENTER_CRITICAL()
+    #define TRACE_EXIT_CRITICAL_SECTION() portEXIT_CRITICAL()
+    /*#include "trcKernelPort.h" */
+#else
+    #define configASSERT( x )  if( ( x ) == 0 ) assertFail(#x, __FILE__, __LINE__ )
+#endif
+    
 /*
 #define traceTASK_SWITCHED_IN() \
   { \
