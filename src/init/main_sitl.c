@@ -45,11 +45,19 @@
 #define CRTP_PORT 19950
 #define CRTP_SERVER_ADDRESS "INADDR_ANY"
 
-int main() 
+int main(int argc, char **argv) 
 {
-  // Initiaze socket parameters
-  crtp_port =  CRTP_PORT;
-  address_host = CRTP_SERVER_ADDRESS;
+
+  if (argc == 3){
+    crtp_port = atoi(argv[1]);
+    address_host = argv[2];
+    printf("CF address : %s , port : %d \n", address_host , crtp_port );
+  } else {
+    // Initiaze socket parameters
+    crtp_port =  CRTP_PORT;
+    address_host = CRTP_SERVER_ADDRESS;
+    printf("No port and ADDRESS selected ! INADDR_ANY-19950 selected as default\n");
+  }
   
   //Launch the system task that will initialize and start everything
   systemLaunch();
