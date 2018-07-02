@@ -36,13 +36,14 @@ static struct {
   uint32_t m4;
 } __attribute__((packed)) motorPower;
 
-static uint32_t lastSentTime = 0;
+static CRTPPacket p_motor;
 
 static void motorsSetRatios(const uint8_t *powerVal);
 
 void powerDistributionInit(void)
 {
-  lastSentTime = xTaskGetTickCount();
+  p_motor.size = 4 * sizeof(uint32_t);
+  p_motor.header = CRTP_HEADER(CRTP_PORT_SETPOINT_SIM, 0);
   // Should already be initialized by the sensor task
   // crtpInitTaskQueue(CRTP_PORT_SETPOINT_SIM);
 }
@@ -84,21 +85,17 @@ void powerDistribution(const control_t *control)
    control->yaw);
   #endif
 
-  if (xTaskGetTickCount() - lastSentTime > M2T(1)){
-    motorsSetRatios((uint8_t *) &motorPower);
-    lastSentTime = xTaskGetTickCount();
-  }
+  // TODO : reduce TX queue size --> Reduce motor message accumulation
+  motorsSetRatios((uint8_t *) &motorPower);
+
 }
 
 static void motorsSetRatios(const uint8_t *powerVal){
-  CRTPPacket p;
-  p.size = 4 * sizeof(uint32_t);
-  p.header = CRTP_HEADER(CRTP_PORT_SETPOINT_SIM, 0);
   uint8_t incr;
-  for (incr = 0 ; incr < p.size ; incr++){
-    p.data[incr] = powerVal[incr];
+  for (incr = 0 ; incr < p_motor.size ; incr++){
+    p_motor.data[incr] = powerVal[incr];
   }
-  crtpSendPacket(&p);
+  crtpSendPacket(&p_motor);
   // consolePrintf("%d , %d , %d , %d  \n", (int) motorPower.m1 , (int) motorPower.m2 , (int) motorPower.m3 , (int) motorPower.m4 );
 }
 
