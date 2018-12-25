@@ -126,7 +126,11 @@ static struct this_s this = {
   .pidZ = {
     .init = {
       .kp = 2.0f,
+#ifndef ENABLE_VERIF
       .ki = 0.5,
+#else
+      .ki = 0.0
+#endif
       .kd = 0,
     },
     .pid.dt = DT,

@@ -34,7 +34,11 @@
 #include "config.h"
 #include "crtp.h"
 #include "platformservice.h"
+
+#ifndef SITL_CF2
 #include "syslink.h"
+#endif
+
 #include "version.h"
 
 static bool isInit=false;
@@ -90,6 +94,9 @@ void platformserviceHandler(CRTPPacket *p)
 
 static void platformCommandProcess(uint8_t command, uint8_t *data)
 {
+#ifdef SITL_CF2
+  return;
+#else
   SyslinkPacket slp;
 
   switch (command) {
@@ -102,6 +109,7 @@ static void platformCommandProcess(uint8_t command, uint8_t *data)
     default:
       break;
   }
+#endif
 }
 
 static void versionCommandProcess(CRTPPacket *p)

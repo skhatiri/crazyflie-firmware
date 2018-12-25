@@ -58,8 +58,9 @@
 #include "estimator_kalman.h"
 #include "outlierFilter.h"
 
-
+#ifndef SITL_CF2
 #include "stm32f4xx.h"
+#endif
 
 #include "FreeRTOS.h"
 #include "queue.h"
@@ -70,11 +71,31 @@
 #include "param.h"
 
 #include "math.h"
+
+#ifndef SITL_CF2
 #include "cf_math.h"
+#endif
 
 //#define KALMAN_USE_BARO_UPDATE
 //#define KALMAN_NAN_CHECK
 
+#ifdef SITL_CF2
+
+#include <string.h>
+
+#define PI                            3.1415926f
+#define arm_matrix_instance_f32       Matrixf
+#define arm_sqrt(x)                   sqrtf(x)
+#define arm_sqrt_f32(x)               sqrtf(x)
+#define arm_cos_f32(x)                cosf(x)
+#define arm_sin_f32(x)                sinf(x)
+
+typedef struct{
+  uint16_t numRows;
+  uint16_t numCols;
+  float *pData;
+} Matrixf;     
+#endif
 
 /**
  * Primary Kalman filter functions
@@ -299,6 +320,7 @@ static uint32_t tdoaCount;
  * Supporting and utility functions
  */
 
+#ifndef SITL_CF2
 static inline void mat_trans(const arm_matrix_instance_f32 * pSrc, arm_matrix_instance_f32 * pDst)
 { configASSERT(ARM_MATH_SUCCESS == arm_mat_trans_f32(pSrc, pDst)); }
 static inline void mat_inv(const arm_matrix_instance_f32 * pSrc, arm_matrix_instance_f32 * pDst)
@@ -307,6 +329,41 @@ static inline void mat_mult(const arm_matrix_instance_f32 * pSrcA, const arm_mat
 { configASSERT(ARM_MATH_SUCCESS == arm_mat_mult_f32(pSrcA, pSrcB, pDst)); }
 static inline float arm_sqrt(float32_t in)
 { float pOut = 0; arm_status result = arm_sqrt_f32(in, &pOut); configASSERT(ARM_MATH_SUCCESS == result); return pOut; }
+#else
+static inline void mat_trans(const arm_matrix_instance_f32 * pSrc, arm_matrix_instance_f32 * pDst)
+{ 
+  bool is_valid = (pSrc->numRows == pDst->numCols) && (pSrc->numCols == pDst->numRows);
+  configASSERT(is_valid);
+  uint8_t i,j;
+  for (i=0 ; i< pSrc->numRows; i++){
+    for(j=0 ; j< pSrc->numCols; j++){
+      pDst->pData[j * pDst->numCols + i] = pSrc->pData[i*pSrc->numCols + j];
+    }
+  } 
+}
+/*static inline void mat_inv(const arm_matrix_instance_f32 * pSrc, arm_matrix_instance_f32 * pDst)
+{ 
+  configASSERT(ARM_MATH_SUCCESS == arm_mat_inverse_f32(pSrc, pDst)); 
+}*/
+static inline void mat_mult(const arm_matrix_instance_f32 * pSrcA, const arm_matrix_instance_f32 * pSrcB, arm_matrix_instance_f32 * pDst)
+{ 
+  bool is_valid = (pSrcA->numCols == pSrcB->numRows) && (pSrcA->numRows == pDst->numRows) && (pSrcB->numCols == pDst->numCols);
+  configASSERT(is_valid);
+  uint8_t i,j,k;
+  for(i=0; i< pDst->numRows ; i++){
+    for(j=0; j<pDst->numCols ; j++){
+      pDst->pData[j+ i*pDst->numCols] = 0.0f;
+    }
+  }
+  for(i=0; i< pDst->numRows ; i++){
+    for(j=0; j<pDst->numCols ; j++){
+      for(k=0; k<pSrcA->numCols; k++){
+        pDst->pData[j+ i*pDst->numCols] += pSrcA->pData[i*pSrcA->numCols + k ] * pSrcB->pData[k*pSrcB->numCols + j];
+      }
+    }
+  }
+}
+#endif
 
 #ifdef KALMAN_NAN_CHECK
 static void stateEstimatorAssertNotNaN() {
@@ -1416,7 +1473,11 @@ void estimatorKalmanInit(void) {
 static bool stateEstimatorEnqueueExternalMeasurement(xQueueHandle queue, void *measurement)
 {
   portBASE_TYPE result;
+#ifndef SITL_CF2
   bool isInInterrupt = (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0;
+#else
+  bool isInInterrupt = false;
+#endif
 
   if (isInInterrupt) {
     portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;

@@ -5,9 +5,11 @@
  * +------+    / /_/ / / /_/ /__/ /  / /_/ / / /_/  __/
  *  ||  ||    /_____/_/\__/\___/_/   \__,_/ /___/\___/
  *
- * Crazyflie control firmware
+ * Crazyflie simulation firmware
  *
- * Copyright (C) 2012-2016 Bitcraze AB
+ * Copyright (C) 2018 Bitcraze AB
+ * Copyright (C) 2018  Eric Goubault, Sylvie Putot, Franck Djeumou
+ *             Cosynux , LIX , France
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,23 +23,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  *
- * num.c - 16bit floating point handling functions
  */
 
-#ifndef __NUM_H
-#define __NUM_H
+#ifndef __SENSORS_SIM_H__
+#define __SENSORS_SIM_H__
 
-#include <stdint.h>
+#include "sensors.h"
 
-#ifdef SITL_CF2
-#include <math.h>
-#endif
+void sensorsSimInit(void);
+bool sensorsSimTest(void);
+bool sensorsSimAreCalibrated(void);
+bool sensorsSimManufacturingTest(void);
+void sensorsSimAcquire(sensorData_t *sensors, const uint32_t tick);
+void sensorsSimWaitDataReady(void);
+bool sensorsSimReadGyro(Axis3f *gyro);
+bool sensorsSimReadAcc(Axis3f *acc);
+bool sensorsSimReadMag(Axis3f *mag);
+bool sensorsSimReadBaro(baro_t *baro);
+void sensorsSimSetAccMode(accModes accMode);
 
-uint16_t single2half(float number);
-float half2single(uint16_t number);
-
-uint16_t limitUint16(int32_t value);
-float constrain(float value, const float minVal, const float maxVal);
-float deadband(float value, const float threshold);
-
-#endif
+#endif // __SENSORS_SIM_H__

@@ -34,8 +34,11 @@
 #include "log.h"
 #include "param.h"
 #include "debug.h"
+
+#ifndef SITL_CF2
 #include "motors.h"
 #include "pm.h"
+#endif
 
 #include "stabilizer.h"
 
@@ -75,7 +78,10 @@ typedef enum { configureAcc, measureNoiseFloor, measureProp, testBattery, restar
 #endif
 
 static void stabilizerTask(void* param);
+
+#ifndef SITL_CF2
 static void testProps(sensorData_t *sensors);
+#endif
 
 static void calcSensorToOutputLatency(const sensorData_t *sensorData)
 {
@@ -160,9 +166,15 @@ static void stabilizerTask(void* param)
       startPropTest = false;
     }
 
+#ifdef SITL_CF2
+    testState = testDone;
+#endif
+
     if (testState != testDone) {
       sensorsAcquire(&sensorData, tick);
+#ifndef SITL_CF2
       testProps(&sensorData);
+#endif
     } else {
       // allow to update estimator dynamically
       if (getStateEstimator() != estimatorType) {
@@ -213,6 +225,7 @@ void stabilizerSetEmergencyStopTimeout(int timeout)
   emergencyStopTimeout = timeout;
 }
 
+#ifndef SITL_CF2
 static float variance(float *buffer, uint32_t length)
 {
   uint32_t i;
@@ -418,6 +431,8 @@ static void testProps(sensorData_t *sensors)
     testState = testDone;
   }
 }
+#endif
+
 PARAM_GROUP_START(health)
 PARAM_ADD(PARAM_UINT8, startPropTest, &startPropTest)
 PARAM_GROUP_STOP(health)
@@ -495,3 +510,10 @@ LOG_GROUP_START(latency)
 LOG_ADD(LOG_UINT32, intToOut, &inToOutLatency)
 LOG_GROUP_STOP(latency)
 
+#ifdef ENABLE_VERIF
+LOG_GROUP_START(stateEstimateV)
+LOG_ADD(LOG_FLOAT, Vx, &state.velocity.x)
+LOG_ADD(LOG_FLOAT, Vy, &state.velocity.y)
+LOG_ADD(LOG_FLOAT, Vz, &state.velocity.z)
+LOG_GROUP_STOP(stateEstimateV)
+#endif

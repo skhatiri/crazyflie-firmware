@@ -911,7 +911,11 @@ static void logReset(void)
 }
 
 /* Public API to access log TOC from within the copter */
-int logGetVarId(char* group, char* name)
+#ifdef ENABLE_VERIF
+int logGetVarId(const char* group, const char* name)
+#else
+int  logGetVarId(char* group, char* name)
+#endif
 {
   int i;
   char * currgroup = "";
