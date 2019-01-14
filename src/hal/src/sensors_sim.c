@@ -202,7 +202,7 @@ static void sensorsTask(void *param)
     }
 
     // Answer while gyro bias not found
-    if (!lastGyroBiasFound){
+    if (!lastGyroBiasFound && gyroBiasFound){
       p.data[0] = gyroBiasFound;
       p.size = 1;
       lastGyroBiasFound =  gyroBiasFound;
