@@ -33,8 +33,8 @@ include tools/make/platform.mk
 
 ######### Stabilizer configuration ##########
 ## These are set by the platform (see tools/make/platforms/*.mk), can be overwritten here
-ESTIMATOR          ?= any
-CONTROLLER         ?= Any # one of Any, PID, Mellinger
+# ESTIMATOR          ?= any
+# CONTROLLER         ?= Any # one of Any, PID, Mellinger
 # POWER_DISTRIBUTION ?= stock
 
 #OpenOCD conf

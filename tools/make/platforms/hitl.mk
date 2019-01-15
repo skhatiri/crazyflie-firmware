@@ -10,6 +10,6 @@ CFLAGS += -DSENSOR_INCLUDED_SIM
 PROJ_OBJ += sensors_sim.o
 
 ######### Stabilizer configuration ##########
-ESTIMATOR          ?= any
+ESTIMATOR          ?= kalman
 CONTROLLER         ?= Any # one of Any, PID, Mellinger
 POWER_DISTRIBUTION ?= sim
