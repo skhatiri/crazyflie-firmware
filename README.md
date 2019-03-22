@@ -1,13 +1,34 @@
 # Crazyflie 2.0 Firmware  [![Build Status](https://api.travis-ci.org/bitcraze/crazyflie-firmware.svg)](https://travis-ci.org/bitcraze/crazyflie-firmware)
 
-This project contains the source code for the Crazyflie 2.0 firmware.
+This project contains the source code for the Crazyflie 2.0 firmware with modification allowing SITL and HITL simulation.
 
-### Crazyflie 1.0 support
+## Modifications for SITL and HITL
 
-The 2017.06 release was the last release with Crazyflie 1.0 support. If you want
-to play with the Crazyflie 1.0 and modify the code, please clone this repo and
-branch off from the 2017.06 tag. 
+The modifications made in order to have SITL and HITL possible includes the following files :
 
+### sitl_make/CMakeLists.txt
+This file is the cmake file in order to build crazyflie instance for SITL simulation. It's doing the same work as the original Makefile but rather include fake sensors, actuators and remove all low level dependencies. The crazyflie instance ```cf2``` is built using your default c++/c compiler.
+
+##### In default SITL compilation the procedure is the following :
+```sh
+cd crazyflie-firmware/sitl_make
+mkdir build
+cd build
+cmake ..
+```
+
+##### For compilation with verification tool enabled
+```sh
+cd crazyflie-firmware/sitl_make
+mkdir build
+cd build
+cmake .. -DBUILD_VERIF=ON
+```
+You can change the verification algorithm parameter by changing [one of the following](https://github.com/wuwushrek/crazyflie-firmware/blob/24a9c046737a53d2775a927824fb75cc4389cd55/sitl_make/CMakeLists.txt#L47-L49) line in the CMakeList.txt file. This can also be accomplished by disabling this lines and setting the parameter in [config_outer.h](https://github.com/wuwushrek/crazyflie-firmware/blob/master/src/outer_ode/interface/config_outer.h).
+
+### src/config/FreeRTOSConfig.h, src/config/config.h, src/lib/FreeRTOS/portable/GCC/Linux/port.c, src/lib/FreeRTOS/portable/GCC/Linux/portmacro.h
+
+The modifications here implies configuration of FreeRTOS for Linux support and definition of 
 ## Dependencies
 
 You'll need to use either the [Crazyflie VM](https://wiki.bitcraze.io/projects:virtualmachine:index),
@@ -72,7 +93,7 @@ Verify the toolchain installation with `arm-none-eabi-gcc --version`
 This repository uses git submodules. Clone with the --recursive flag
 
 ```bash
-git clone --recursive https://github.com/bitcraze/crazyflie-firmware.git
+git clone --recursive https://github.com/wuwushrek/crazyflie-firmware
 ```
 
 If you already have cloned the repo without the --recursive option, you need to 
@@ -85,7 +106,7 @@ git submodule update
 ```
 
 
-## Compiling
+## Compiling in standard mode
 
 ### Crazyflie 2.0
 
@@ -98,6 +119,18 @@ or with the toolbelt
 
 ```bash
 tb make
+```
+
+### Crazyflie in HITL mode
+
+```bash
+make PLATFORM=hitl
+```
+
+### Flashing the crazyflie
+
+```bash
+make cload
 ```
 
 ### config.mk
