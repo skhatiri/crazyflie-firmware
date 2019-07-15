@@ -14,9 +14,10 @@ static OdeFunc my_dyn;
 
 static bool isInit = false;
 
-static FILE* zlogfile[N_STATE];
+//#$ TODO uncomment if using in sitl. For hitl, one should send the data via radio
+//static FILE* zlogfile[N_STATE];
 
-static const char* Z_LOG_FILE[N_STATE] = {"roll.txt","pitch.txt","p.txt","q.txt","r.txt","int_p.txt","int_q.txt","int_r.txt","vz.txt","z.txt","int_vz.txt"};
+//static const char* Z_LOG_FILE[N_STATE] = {"roll.txt","pitch.txt","p.txt","q.txt","r.txt","int_p.txt","int_q.txt","int_r.txt","vz.txt","z.txt","int_vz.txt"};
 
 static float currentTime = 0;
 
@@ -83,10 +84,11 @@ static void verifTask(void* params)
 		my_dyn.params[3] = logGetFloat(idZsp);
 
 		currentTime = xTaskGetTickCount()/1000.0f;
-		for(uint8_t i= 0 ; i<N_STATE ; i++){
-			Interval curr_Z = x0[i].getInterval();
-			fprintf(zlogfile[i], "%f\t%f\t%f\n", (double) currentTime, (double) curr_Z.getMin(), (double) curr_Z.getMax());
-		}
+		// commented block below is related to the commented lines marked with #$ TODO
+		//for(uint8_t i= 0 ; i<N_STATE ; i++){
+		//	Interval curr_Z = x0[i].getInterval();
+		//	fprintf(zlogfile[i], "%f\t%f\t%f\n", (double) currentTime, (double) curr_Z.getMin(), (double) curr_Z.getMax());
+		//}
 
 		// DEBUG_PRINT("Psp = %f", (double) my_dyn.params[0]);
 		// DEBUG_PRINT("Qsp = %f", (double) my_dyn.params[1]);
@@ -137,9 +139,10 @@ void verifTaskInit()
 
 	DEBUG_PRINT("Got Variable ID succeed \n");
 
-	for(uint8_t i= 0 ; i<N_STATE ; i++){
-		zlogfile[i] = fopen(Z_LOG_FILE[i] , "w+");
-	}
+	// commented block below is related to the commented lines marked with #$ TODO
+	//for(uint8_t i= 0 ; i<N_STATE ; i++){
+	//	zlogfile[i] = fopen(Z_LOG_FILE[i] , "w+");
+	//}
 
 	isInit = true;
 }
@@ -161,10 +164,12 @@ static void start_verif()
 	Interval curr_Z;
 	while (tm_val.tn <= INTEG_DURATION){
 		tm_val.buildAndEval();
-		for(uint8_t i= 0 ; i<N_STATE ; i++){
-			Interval curr_Z = x0[i].getInterval();
-			fprintf(zlogfile[i], "%f\t%f\t%f\n", (double) currentTime, (double) curr_Z.getMin(), (double) curr_Z.getMax());
-		}
+		// commented block below is related to the commented lines marked with #$ TODO
+		//for(uint8_t i= 0 ; i<N_STATE ; i++){
+		//	Interval curr_Z = x0[i].getInterval();
+		//	fprintf(zlogfile[i], "%f\t%f\t%f\n", (double) currentTime, (double) curr_Z.getMin(), (double) curr_Z.getMax());
+		//}
+
 		//curr_Z = x0[9].getInterval();
 		//fprintf(zlogfile, "%f\t%f\t%f\n", (double) (currentTime+tm_val.tn) , (double) curr_Z.getMin(), (double) curr_Z.getMax());
 /*		DEBUG_PRINT(" t = %f" , (double) tm_val.tn);
