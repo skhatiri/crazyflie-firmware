@@ -129,7 +129,7 @@ static struct this_s this = {
 #ifndef ENABLE_VERIF
       .ki = 0.5,
 #else
-      .ki = 0.0
+      .ki = 0.0,
 #endif
       .kd = 0,
     },
