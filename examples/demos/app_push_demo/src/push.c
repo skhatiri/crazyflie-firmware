@@ -44,6 +44,8 @@
 
 #define DEBUG_MODULE "PUSH"
 
+
+//sets the point and speed for hovering 
 static void setHoverSetpoint(setpoint_t *setpoint, float vx, float vy, float z, float yawrate)
 {
   setpoint->mode.z = modeAbs;
@@ -73,6 +75,7 @@ struct PushVelocities
 #define MAX(a,b) ((a>b)?a:b)
 #define MIN(a,b) ((a<b)?a:b)
 
+//sets the side and front velocity according to detected objects nearby 
 static struct PushVelocities setPushVelocity(uint16_t left,uint16_t right,uint16_t front,uint16_t back,uint16_t up,float factor,float radius, float height_sp)
 {
   struct PushVelocities vel;
@@ -130,7 +133,8 @@ void appMain()
   paramVarId_t idPositioningDeck = paramGetVarId("deck", "bcFlow2");
   paramVarId_t idMultiranger = paramGetVarId("deck", "bcMultiranger");
 
-
+  float factor = velMax/radius;
+  
   //DEBUG_PRINT("%i", idUp);
 
   DEBUG_PRINT("Waiting for activation ...\n");
@@ -145,21 +149,31 @@ void appMain()
     uint16_t up = logGetUint(idUp);
 
     if (state == unlocked) {
+      // the normal state when the push functionality is enabled
+      
+
+      //get range sensors inputs
       uint16_t left = logGetUint(idLeft);
       uint16_t right = logGetUint(idRight);
       uint16_t front = logGetUint(idFront);
       uint16_t back = logGetUint(idBack);
-	  
-	  velocity = setPushVelocity (left, right, front, back, up, factor, radius, height_sp);
+	
+      //compute the target velocity to get away from detected objects nearby
+      velocity = setPushVelocity (left, right, front, back, up, factor, radius, height_sp);
 	  
       /*DEBUG_PRINT("l=%i, r=%i, lo=%f, ro=%f, vel=%f\n", left_o, right_o, l_comp, r_comp, velSide);
       DEBUG_PRINT("f=%i, b=%i, fo=%f, bo=%f, vel=%f\n", front_o, back_o, f_comp, b_comp, velFront);
       DEBUG_PRINT("u=%i, d=%i, height=%f\n", up_o, height);*/
 
-	  setHoverSetpoint(&setpoint, velocity.front, velocity.side, velocity.height, 0);
-	  commanderSetSetpoint(&setpoint, 3);
+	
+      //set the computed velocity in the position data 
+      setHoverSetpoint(&setpoint, velocity.front, velocity.side, velocity.height, 0);
+	    
+      //execute the velocity and position command on crazyFlie 
+      commanderSetSetpoint(&setpoint, 3);
 
       if (velocity.height < 0.1f) {
+	//if there is a nearby object on top of the drone, command to stop the push funcionality
         state = stopping;
         DEBUG_PRINT("X\n");
       }
