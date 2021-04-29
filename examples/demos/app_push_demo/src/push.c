@@ -62,6 +62,40 @@ static void setHoverSetpoint(setpoint_t *setpoint, float vx, float vy, float z, 
   setpoint->velocity_body = true;
 }
 
+
+struct PushVelocities
+{
+  float side;
+  float front;
+  float height;
+}
+
+#define MAX(a,b) ((a>b)?a:b)
+#define MIN(a,b) ((a<b)?a:b)
+
+static struct PushVelocities setPushVelocity(uint16_t left,uint16_t right,uint16_t front,uint16_t back,uint16_t up,float factor,float radius, float height_sp)
+{
+  struct PushVelocities vel;
+  
+  uint16_t left_o = radius - MIN(left, radius);
+  uint16_t right_o = radius - MIN(right, radius);
+  float l_comp = (-1) * left_o * factor;
+  float r_comp = right_o * factor;
+  float vel.side = r_comp + l_comp;
+  
+  uint16_t front_o = radius - MIN(front, radius);
+  uint16_t back_o = radius - MIN(back, radius);
+  float f_comp = (-1) * front_o * factor;
+  float b_comp = back_o * factor;
+  float vel.front = b_comp + f_comp;
+  
+  uint16_t up_o = radius - MIN(up, radius);
+  float vel.height = height_sp - up_o/1000.0f;  
+  
+  return vel;
+}
+
+
 typedef enum {
     idle,
     lowUnlock,
@@ -80,8 +114,6 @@ static const uint16_t radius = 300;
 
 static const float height_sp = 0.2f;
 
-#define MAX(a,b) ((a>b)?a:b)
-#define MIN(a,b) ((a<b)?a:b)
 
 void appMain()
 {
@@ -98,8 +130,6 @@ void appMain()
   paramVarId_t idPositioningDeck = paramGetVarId("deck", "bcFlow2");
   paramVarId_t idMultiranger = paramGetVarId("deck", "bcMultiranger");
 
-
-  float factor = velMax/radius;
 
   //DEBUG_PRINT("%i", idUp);
 
@@ -119,32 +149,17 @@ void appMain()
       uint16_t right = logGetUint(idRight);
       uint16_t front = logGetUint(idFront);
       uint16_t back = logGetUint(idBack);
-
-      uint16_t left_o = radius - MIN(left, radius);
-      uint16_t right_o = radius - MIN(right, radius);
-      float l_comp = (-1) * left_o * factor;
-      float r_comp = right_o * factor;
-      float velSide = r_comp + l_comp;
-
-      uint16_t front_o = radius - MIN(front, radius);
-      uint16_t back_o = radius - MIN(back, radius);
-      float f_comp = (-1) * front_o * factor;
-      float b_comp = back_o * factor;
-      float velFront = b_comp + f_comp;
-
-      uint16_t up_o = radius - MIN(up, radius);
-      float height = height_sp - up_o/1000.0f;
-
+	  
+	  velocity = setPushVelocity (left, right, front, back, up, factor, radius, height_sp);
+	  
       /*DEBUG_PRINT("l=%i, r=%i, lo=%f, ro=%f, vel=%f\n", left_o, right_o, l_comp, r_comp, velSide);
       DEBUG_PRINT("f=%i, b=%i, fo=%f, bo=%f, vel=%f\n", front_o, back_o, f_comp, b_comp, velFront);
       DEBUG_PRINT("u=%i, d=%i, height=%f\n", up_o, height);*/
 
-      if (1) {
-        setHoverSetpoint(&setpoint, velFront, velSide, height, 0);
-        commanderSetSetpoint(&setpoint, 3);
-      }
+	  setHoverSetpoint(&setpoint, velocity.front, velocity.side, velocity.height, 0);
+	  commanderSetSetpoint(&setpoint, 3);
 
-      if (height < 0.1f) {
+      if (velocity.height < 0.1f) {
         state = stopping;
         DEBUG_PRINT("X\n");
       }
