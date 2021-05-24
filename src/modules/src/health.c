@@ -125,7 +125,9 @@ static bool evaluatePropTest(float low, float high, float value, uint8_t motor)
 
 bool healthShallWeRunTest(void)
 {
-
+#ifdef SITL_CF2
+  return false;
+#else
   if (startPropTest != false) {
     testState = configureAcc;
     startPropTest = false;
@@ -135,6 +137,7 @@ bool healthShallWeRunTest(void)
   }
 
   return (testState != testDone);
+#endif
 }
 
 void healthRunTests(sensorData_t *sensors)

@@ -35,7 +35,9 @@
 #include "config.h"
 #include "crtp.h"
 #include "platformservice.h"
+#ifndef SITL_CF2
 #include "syslink.h"
+#endif
 #include "version.h"
 #include "platform.h"
 #include "app_channel.h"
@@ -111,6 +113,9 @@ static void platformSrvTask(void* prm)
 
 static void platformCommandProcess(uint8_t command, uint8_t *data)
 {
+#ifdef SITL_CF2
+  return;
+#else
   static SyslinkPacket slp;
 
   switch (command) {
@@ -123,6 +128,7 @@ static void platformCommandProcess(uint8_t command, uint8_t *data)
     default:
       break;
   }
+#endif
 }
 
 void platformserviceSendAppchannelPacket(CRTPPacket *p)

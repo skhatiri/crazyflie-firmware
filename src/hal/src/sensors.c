@@ -47,6 +47,9 @@
   #include "sensors_bosch.h"
 #endif
 
+#ifdef SENSOR_INCLUDED_SIM
+  #include "sensors_sim.h"
+#endif
 
 typedef struct {
   SensorImplementation_t implements;
@@ -135,6 +138,23 @@ static const sensorsImplementation_t sensorImplementations[SensorImplementation_
     .readMag = sensorsBoschReadMag,
     .readBaro = sensorsBoschReadBaro,
     .setAccMode = sensorsBoschSetAccMode,
+    .dataAvailableCallback = nullFunction,
+  },
+#endif
+#ifdef SENSOR_INCLUDED_SIM
+  {
+    .implements = SensorImplementation_sim,
+    .init = sensorsSimInit,
+    .test = sensorsSimTest,
+    .areCalibrated = sensorsSimAreCalibrated,
+    .manufacturingTest = sensorsSimManufacturingTest,
+    .acquire = sensorsSimAcquire,
+    .waitDataReady = sensorsSimWaitDataReady,
+    .readGyro = sensorsSimReadGyro,
+    .readAcc = sensorsSimReadAcc,
+    .readMag = sensorsSimReadMag,
+    .readBaro = sensorsSimReadBaro,
+    .setAccMode = sensorsSimSetAccMode,
     .dataAvailableCallback = nullFunction,
   },
 #endif

@@ -50,12 +50,26 @@ static inline void assert_aligned_4_bytes(const arm_matrix_instance_f32* matrix)
   ASSERT((address & 0x3) == 0);
 }
 
+#ifndef SITL_CF2
 static inline void mat_trans(const arm_matrix_instance_f32 * pSrc, arm_matrix_instance_f32 * pDst) {
   assert_aligned_4_bytes(pSrc);
   assert_aligned_4_bytes(pDst);
 
   ASSERT(ARM_MATH_SUCCESS == arm_mat_trans_f32(pSrc, pDst));
 }
+#else 
+static inline void mat_trans(const arm_matrix_instance_f32 * pSrc, arm_matrix_instance_f32 * pDst)
+{ 
+  bool is_valid = (pSrc->numRows == pDst->numCols) && (pSrc->numCols == pDst->numRows);
+  ASSERT(is_valid);
+  uint8_t i,j;
+  for (i=0 ; i< pSrc->numRows; i++){
+    for(j=0 ; j< pSrc->numCols; j++){
+      pDst->pData[j * pDst->numCols + i] = pSrc->pData[i*pSrc->numCols + j];
+    }
+  } 
+}
+#endif
 
 static inline void mat_inv(const arm_matrix_instance_f32 * pSrc, arm_matrix_instance_f32 * pDst) {
   assert_aligned_4_bytes(pSrc);
@@ -64,6 +78,7 @@ static inline void mat_inv(const arm_matrix_instance_f32 * pSrc, arm_matrix_inst
   ASSERT(ARM_MATH_SUCCESS == arm_mat_inverse_f32(pSrc, pDst));
 }
 
+#ifndef SITL_CF2
 static inline void mat_mult(const arm_matrix_instance_f32 * pSrcA, const arm_matrix_instance_f32 * pSrcB, arm_matrix_instance_f32 * pDst) {
   assert_aligned_4_bytes(pSrcA);
   assert_aligned_4_bytes(pSrcB);
@@ -71,6 +86,26 @@ static inline void mat_mult(const arm_matrix_instance_f32 * pSrcA, const arm_mat
 
   ASSERT(ARM_MATH_SUCCESS == arm_mat_mult_f32(pSrcA, pSrcB, pDst));
 }
+#else
+static inline void mat_mult(const arm_matrix_instance_f32 * pSrcA, const arm_matrix_instance_f32 * pSrcB, arm_matrix_instance_f32 * pDst)
+{ 
+  bool is_valid = (pSrcA->numCols == pSrcB->numRows) && (pSrcA->numRows == pDst->numRows) && (pSrcB->numCols == pDst->numCols);
+  ASSERT(is_valid);
+  uint8_t i,j,k;
+  for(i=0; i< pDst->numRows ; i++){
+    for(j=0; j<pDst->numCols ; j++){
+      pDst->pData[j+ i*pDst->numCols] = 0.0f;
+    }
+  }
+  for(i=0; i< pDst->numRows ; i++){
+    for(j=0; j<pDst->numCols ; j++){
+      for(k=0; k<pSrcA->numCols; k++){
+        pDst->pData[j+ i*pDst->numCols] += pSrcA->pData[i*pSrcA->numCols + k ] * pSrcB->pData[k*pSrcB->numCols + j];
+      }
+    }
+  }
+}
+#endif
 
 static inline float arm_sqrt(float32_t in) {
   float pOut = 0;

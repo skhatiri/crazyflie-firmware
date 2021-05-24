@@ -40,7 +40,9 @@
 #include "worker.h"
 #include "lighthouse_storage.h"
 
+#ifndef SITL_CF2
 #include "locodeck.h"
+#endif
 
 #include "estimator.h"
 #include "quatcompress.h"
@@ -106,12 +108,15 @@ static positionMeasurement_t ext_pos;
 // Struct for logging pose information
 static poseMeasurement_t ext_pose;
 
+#ifndef SITL_CF2
 static CRTPPacket pkRange;
 static uint8_t rangeIndex;
 static bool enableRangeStreamFloat = false;
 
 static CRTPPacket LhAngle;
 static bool enableLighthouseAngleStream = false;
+#endif
+
 static float extPosStdDev = 0.01;
 static float extQuatStdDev = 4.5e-3;
 static bool isInit = false;
@@ -269,7 +274,9 @@ static void genericLocHandle(CRTPPacket* pk)
 
   switch (type) {
     case LPS_SHORT_LPP_PACKET:
+#ifndef SITL_CF2
       lpsShortLppPacketHandler(pk);
+#endif
       break;
     case EMERGENCY_STOP:
       stabilizerSetEmergencyStop();
@@ -311,6 +318,7 @@ static void extPositionPackedHandler(CRTPPacket* pk)
   }
 }
 
+#ifndef SITL_CF2
 void locSrvSendRangeFloat(uint8_t id, float range)
 {
   rangePacket *rp = (rangePacket *)pkRange.data;
@@ -362,6 +370,7 @@ void locSrvSendLighthouseAngle(int basestation, pulseProcessorResult_t* angles)
     crtpSendPacket(&LhAngle);
   }
 }
+#endif
 
 
 LOG_GROUP_START(ext_pos)
@@ -374,9 +383,11 @@ LOG_GROUP_START(locSrvZ)
   LOG_ADD(LOG_UINT16, tick, &tickOfLastPacket)  // time when data was received last (ms/ticks)
 LOG_GROUP_STOP(locSrvZ)
 
+#ifndef SITL_CF2
 PARAM_GROUP_START(locSrv)
   PARAM_ADD(PARAM_UINT8, enRangeStreamFP32, &enableRangeStreamFloat)
   PARAM_ADD(PARAM_UINT8, enLhAngleStream, &enableLighthouseAngleStream)
   PARAM_ADD(PARAM_FLOAT, extPosStdDev, &extPosStdDev)
   PARAM_ADD(PARAM_FLOAT, extQuatStdDev, &extQuatStdDev)
 PARAM_GROUP_STOP(locSrv)
+#endif

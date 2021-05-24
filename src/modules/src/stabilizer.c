@@ -34,8 +34,10 @@
 #include "log.h"
 #include "param.h"
 #include "debug.h"
+#ifndef SITL_CF2
 #include "motors.h"
 #include "pm.h"
+#endif
 
 #include "stabilizer.h"
 

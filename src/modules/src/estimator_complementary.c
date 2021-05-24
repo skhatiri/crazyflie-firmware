@@ -25,8 +25,9 @@
  * estimator_complementary.c - a complementary estimator
  */
 
+#ifndef SITL_CF2
 #include "stm32f4xx.h"
-
+#endif
 #include "FreeRTOS.h"
 #include "queue.h"
 
@@ -109,7 +110,11 @@ static bool latestTofMeasurement(tofMeasurement_t* tofMeasurement) {
 static bool overwriteMeasurement(xQueueHandle queue, void *measurement)
 {
   portBASE_TYPE result;
+#ifndef SITL_CF2
   bool isInInterrupt = (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0;
+#else
+  bool isInInterrupt = false;
+#endif
 
   if (isInInterrupt) {
     portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;

@@ -41,9 +41,11 @@
 
 #ifndef CONFIG_H_
 #define CONFIG_H_
-#include "nrf24l01.h"
+#ifndef SITL_CF2
+  #include "nrf24l01.h"
 
-#include "trace.h"
+  #include "trace.h"
+#endif
 #include "usec_time.h"
 
 #define PROTOCOL_VERSION 4
@@ -63,8 +65,28 @@
   #define configGENERATE_RUN_TIME_STATS 1
   #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() initUsecTimer()
   #define portGET_RUN_TIME_COUNTER_VALUE() usecTimestamp()
-#endif
+#elif defined(SITL_CF2)
+  // Simulation configuration
+  #define P_NAME "Crazyflie 2.0"
+  #define QUAD_FORMATION_X
 
+  #define CONFIG_BLOCK_ADDRESS      (2048 * (64-1))
+  #define MCU_ID_ADDRESS          0x1FFF7A10
+  #define MCU_FLASH_SIZE_ADDRESS  0x1FFF7A22
+  #define FREERTOS_HEAP_SIZE        40000
+  #define FREERTOS_MIN_STACK_SIZE   150
+  #define FREERTOS_MCU_CLOCK_HZ     168000000
+  
+  /* Run time stats gathering configuration options. */
+  unsigned long ulGetRunTimeCounterValue( void ); /* Prototype of function that returns run time counter. */  
+  #define configGENERATE_RUN_TIME_STATS 1
+
+  extern void vPortFindTicksPerSecond( void );
+  #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS() vPortFindTicksPerSecond()
+
+  extern unsigned long ulPortGetTimerValue( void );
+  #define portGET_RUN_TIME_COUNTER_VALUE() ulPortGetTimerValue()
+#endif
 
 // Task priorities. Higher number higher priority
 #define STABILIZER_TASK_PRI     5
@@ -104,6 +126,7 @@
 #define UART2_TASK_PRI          3
 #define CRTP_SRV_TASK_PRI       0
 #define PLATFORM_SRV_TASK_PRI   0
+#define VERIF_TASK_PRI          1
 
 // Not compiled
 #if 0
@@ -154,6 +177,7 @@
 #define UART2_TASK_NAME         "UART2"
 #define CRTP_SRV_TASK_NAME      "CRTP-SRV"
 #define PLATFORM_SRV_TASK_NAME  "PLATFORM-SRV"
+#define VERIF_TASK_NAME         "VERIF"
 
 //Task stack sizes
 #define SYSTEM_TASK_STACKSIZE         (2* configMINIMAL_STACK_SIZE)
@@ -188,6 +212,7 @@
 #define UART2_TASK_STACKSIZE          configMINIMAL_STACK_SIZE
 #define CRTP_SRV_TASK_STACKSIZE       configMINIMAL_STACK_SIZE
 #define PLATFORM_SRV_TASK_STACKSIZE   configMINIMAL_STACK_SIZE
+#define VERIF_TASK_STACKSIZE          (100 * configMINIMAL_STACK_SIZE)   
 
 //The radio channel. From 0 to 125
 #define RADIO_CHANNEL 80

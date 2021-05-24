@@ -595,7 +595,11 @@ void estimatorKalmanInit(void) {
 static bool appendMeasurement(xQueueHandle queue, void *measurement)
 {
   portBASE_TYPE result;
+#ifndef SITL_CF2
   bool isInInterrupt = (SCB->ICSR & SCB_ICSR_VECTACTIVE_Msk) != 0;
+#else
+  bool isInInterrupt = false;
+#endif
 
   if (isInInterrupt) {
     portBASE_TYPE xHigherPriorityTaskWoken = pdFALSE;
