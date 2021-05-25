@@ -31,7 +31,7 @@ set (CF2_SITL_SRCS_DIR
 )
 
 set(FREERTOS_SRC_DIR 
-  ${CF2_SITL_SRCS_DIR}/lib/FreeRTOS
+  ${CMAKE_CURRENT_SOURCE_DIR}/../vendor/FreeRTOS
 )
 
 # Code variables
@@ -94,7 +94,7 @@ set(FREERTOS_SRCS
    ${FREERTOS_SRC_DIR}/tasks.c
    ${FREERTOS_SRC_DIR}/timers.c
    ${FREERTOS_SRC_DIR}/croutine.c
-   ${FREERTOS_SRC_DIR}/portable/GCC/Linux/port.c
+#   ${FREERTOS_SRC_DIR}/portable/GCC/Linux/port.c
    ${FREERTOS_SRC_DIR}/portable/MemMang/heap_3.c
 )
 
@@ -138,8 +138,8 @@ set(SRCS
   ${CF2_SITL_SRCS_DIR}/modules/src/param.c
   ${CF2_SITL_SRCS_DIR}/modules/src/log.c
   ${CF2_SITL_SRCS_DIR}/modules/src/worker.c
-  ${CF2_SITL_SRCS_DIR}/modules/src/trigger.c
-  ${CF2_SITL_SRCS_DIR}/modules/src/sitaw.c
+#  ${CF2_SITL_SRCS_DIR}/modules/src/trigger.c
+#  ${CF2_SITL_SRCS_DIR}/modules/src/sitaw.c
   ${CF2_SITL_SRCS_DIR}/modules/src/queuemonitor.c
   ${CF2_SITL_SRCS_DIR}/modules/src/msp.c
   ${CF2_SITL_SRCS_DIR}/modules/src/platformservice.c
@@ -179,7 +179,7 @@ set(SRCS
   #Utilities
   ${CF2_SITL_SRCS_DIR}/utils/src/filter.c
   ${CF2_SITL_SRCS_DIR}/utils/src/eprintf.c
-  ${CF2_SITL_SRCS_DIR}/utils/src/crc.c
+#  ${CF2_SITL_SRCS_DIR}/utils/src/crc.c
   ${CF2_SITL_SRCS_DIR}/utils/src/num.c
   ${CF2_SITL_SRCS_DIR}/utils/src/debug.c
   ${CF2_SITL_SRCS_DIR}/utils/src/configblocksitl.c
