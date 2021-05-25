@@ -23,12 +23,30 @@
  *
  * cfassert.h - Assert macro
  */
-
+#ifndef SITL_CF2
 #include "stm32fxxx.h"
+#endif
 #include "console.h"
 
 #ifndef __CFASSERT_H__
 #define __CFASSERT_H__
+
+#ifdef SITL_CF2
+#include "FreeRTOSConfig.h"
+
+#define ASSERT(e)  if (e) ; \
+        else vAssertCalled( __LINE__ , __FILE__)
+
+#ifdef DEBUG
+#define IF_DEBUG_ASSERT(e)  if (e) ; \
+        else vAssertCalled(__LINE__ , __FILE__)
+#else
+#define IF_DEBUG_ASSERT(e)
+#endif
+
+#define ASSERT_FAILED() vAssertCalled(__LINE__ , __FILE__)
+
+#else // Case no simulation
 
 #define ASSERT(e)  if (e) ; \
         else assertFail( #e, __FILE__, __LINE__ )
@@ -98,4 +116,5 @@ void storeAssertTextData(const char *text);
  */
 bool cfAssertNormalStartTest(void);
 
+#endif
 #endif //__CFASSERT_H__
